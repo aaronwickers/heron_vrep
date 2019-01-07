@@ -1,0 +1,190 @@
+%
+% ****
+\chapter{Physikalisches Konzept & Modellbildung in VREP}
+% ****
+In diesem Kapitel soll näher erläutert werden, nach welchen physikalischen Überlegungen das in dieser Arbeit verwendete Modell konstruiert wurde und mit Hilfe welcher Vereinfachungen schließlich ein Modell in der Simulationssoftware VREP erzeugt wurde. 
+Dazu wird zunächst unter Zuhilfenahme von Fachliteratur ein entsprechendes Konzept vorgestellt und anschließend die Entwicklung eines funktionsfähigen Modells in ihrem Verlauf dargestellt.
+%
+\section{Allgemeines}
+%
+Allgemein kann das in dieser Arbeit vorgestellte Modell eines Wasserfahrzeuges mit 6 Freiheitsgraden modelliert werden. Es werden im Folgenden jeweils die englischen Begriffe der Fachliteratur verwendet. Es handelt sich dabei um 3 translatorische Freiheitsgrade (\textit{surge}, \textit{sway}, \textit{heave}). Dabei bezeichnet \textit{heave} die Hebung in Richtung der Z-Achse, \textit{sway} die Driftbewegung entlang der Y-Achse und \textit{surge} den Schub in Richtung der X-Achse - jeweils in körperfesten Koordinaten. 
+Hinzu kommen 3 rotatorische Freiheitsgrade (\textit{roll}, \textit{pitch}, \textit{yaw}). Dabei bezeichnet \textit{roll} die Rotation um die X-Achse, \textit{pitch} die Rotation um die Y-Achse und \textit{yaw} die Rotation um die Z-Achse, also gleichzeitig auch die Richtung, in die das Vehikel ausgerichtet ist. 
+
+Eine Übersicht über diese 6 Freiheitsgrade (im Folgenden abgekürzt aus dem Englischen: DOF = degrees of freedom) ist in folgender Abbildung visualisiert:
+
+
+Hier kommt eine Abbildung aus dem Fossen hinein (Das Schiff mit seinen Winkeln)
+
+
+
+Um eindeutige Richtungsvektoren aufzeigen zu können, ist es notwendig, sowohl ein starres absolutes Koordinatensystem festzusetzen, als auch ein dynamisches, im Folgenden als \textit{körperfest} bezeichnetes Koordinatensystem zu definieren. 
+Das absolute Koordinatensystem soll im Folgenden durch den Vektor \textbf{\textit{\eta}} = (x,y,z) ausgedrückt werden, das körperfeste durch den Vektor \nu =(u,v,z). Wie hier schon erkennbar, beinhalten beide Systeme die Komponente Z. Bei dem körperfesten System handelt es sich also nur um eine Rotation um die Z-Achse. Dies wird in diesem Fall durch die Rotationsmatrix 
+
+[matrix]
+
+ausgeführt. Eine Rückführung lässt sich nach durch die nach Gauß-Jordan-Verfahren berechnete Umkehrmatrix
+
+[matrix]^-1
+
+ausüben. 
+Der Winkel, um welchen sich das Schiff nun vom absoluten Koordinatensystem gedreht hat, ist nach Definition dann also der bereits benannte Winkel [yaw].
+Eine Visualisierung für diese Rotation der Koordinatensysteme beinhaltet folgende Darstellung:
+
+[Abbildung von 2 Koordinatensystemen aus Fossen/Masterthesis.]
+
+Für die Berechnungen werden im Folgenden außerdem die Geschwindigkeiten in jedem Freiheitsgrad benötigt. So definiert sich ein Vektor der Geschwindigkeiten also zu:
+
+vektor[surge_dot,sway_dot,heave_dot,roll_dot,pitch_dot,yaw_dot]
+
+Dabei bezeichnen die ersten drei die translatorischen Geschwindigkeiten entlang der jeweiligen Achse, die letzten drei hingegen die Winkelgeschwindigkeiten der jeweiligen Rotationsbewegung.
+
+Innerhalb des definierten absoluten Koordinatensystems wird festgelegt, dass in unserer Simulationsumgebung ein Wasserspiegel bei z=0 existiere. Dadurch greifen jegliche Auftriebskräfte erst ab diesem Punkt. Theoretisch kann dieser auch beliebig gesetzt werden. 
+
+\section{Statischer Auftrieb}
+%
+Der sogenannte "statische Auftrieb" ist der Grundstein für die Simulation eines Wasserfahrzeugs. Auch bekannt als "Archimedisches Prinzip" ist hiermit die folgende Formel gemeint:
+
+Fa=g*roh*V
+
+Dabei sei Fa die Auftriebskraft, g die Erdbeschleunigung, roh die Dichte des Stoffes und V das vom eintauchenden Körper verdrängte Volumen. 
+Die Formel stellt also eine Beziehung zwischen der Kraft, die ein Körper als Auftrieb in Wasser erfährt, und einem Volumen her. 
+Ihr entgegen wirkt grundsätzlich auf der Erde die Gewichtskraft:
+
+Fg=m*g
+
+Dabei bezeichnet Fg die resultierende Gewichtskraft und m die Masse eines Körpers. Durch eine Gleichsetzung dieser Kräfte lässt sich demnach bestimmen, ob ein Körper überhaupt schwimmen kann oder ob er untergeht. 
+Es folgt:
+
+Fa=Fg
+g*roh*v=m*g
+roh*V=m
+
+Hiermit ist also eine Abhängigkeit von der Beschaffenheit der Umgebung, dem Volumen sowie der Masse eines Körpers gegeben. 
+Ein Körper schwimmt nur, wenn die Gewichtskraft kleines als die Auftriebskraft ist - demnach also nur, wenn die Masse des Körpers kleiner als das verdrängte Volumen multipliziert mit der Dichte des verdrängten Stoffes ist. Übersichtlicher gilt also:
+
+[abbildung fallunterscheidung wikipedia]
+
+Für das Modell dieser Arbeit bedeutet diese Überlegung also, es muss eine Kraft in Z-Richtung wirken, für die gilt
+
+Fz= Integral 0,0,0 bis x,y,z V(x,y,z)*dx*dy*dz *g*roh
+
+Dabei sei das Integral über V(x,y,z) ein beliebig geformtes Volumenelement, welches eine Wasserverdrängung ausübt. 
+Da die Unterschiede schätzungsweise gering ausfallen und eine erheblich leichtere Berechnung daraus folgt, wird für das in dieser Arbeit konstruierte Modell angenommen, dass der Schwimmkörper näherungsweise einem Quader entspricht. Dadurch vereinfacht sich die Kraft zu
+
+Fheave= A_xy*g*roh*t
+
+,wobei A_xy die Fläche des Quaders in der X-Y-Ebene darstellt und t die Eintauchtiefe misst. 
+Mit Hilfe dieser Kraft ist es nun erstmal möglich, einen sich nicht bewegenden schwimmenden Quader zu simulieren. In der Realität entspräche dies einem einfachen Ponton.
+
+%
+\section{Dynamischer Auftrieb}
+%
+Wie bereits festgestellt, verfügt das hier verwendete Modell eines Wasserfahrzeuges über 6 Freiheitsgrade (3 Translation, 3 Rotation). Um in einem leeren Raum nun nicht nur das Verhalten eines Pontons sondern das eines Wasserfahrzeugs simulieren zu können, muss überlegt werden, welche Kräfte auf einen bewegten Körper in Wasser wirken. Diese Kräfte fasst man allgemein unter dem Begriff des "Dynamischen Auftriebs" zusammen.
+Mit dem bereits in [VERLINKUNG ZU VORIGEM KAPITEL] beschriebenen statischen Auftrieb ist ein translatorischer Freiheitsgrad abgedeckt, nämlich der Auftrieb in Richtung der Z-Achse. Es verbleiben also Ausgleichskräfte in Richtung der X- und Y-Achse, sowie Ausgleichsmomente in den Rotationsrichtungen Roll, Pitch und Yaw. Die Realisierung dieser Kräfte erfolgt durch zwei verschiedene Modelle.
+
+%
+\subsection{Ausgleichskräfte und -momente in X-Y-Ebene}
+Das hier verwendete Prinzip basiert auf dem in [Verlinkung] vorgestellten Modell für Wasserfahrzeuge. Angenommen wird zunächst einzig und allein die Bewegung in der X-Y-Ebene. Somit werden mit Hilfe dieses Modells die Kräfte in X- und Y-Richtung [FX] [FY] sowie ein Drehmoment in der X-Y-Ebene [YAW] abgedeckt.
+
+Gemäß Fossen [NOCHMAL RAUSSUCHEN, WO GENAU DAS STEHT] gilt für Oberflächen-Wasserfahrzeuge der folgende Zusammenhang aus 2 Gleichungen für dynamimsche Kräfte in der X-Y-Ebene:
+
+[Formel 1]
+[Formel 2]
+
+Dabei beschreibt v=[surge_dot,sway_dot,yaw_dot] den Geschwindigkeitsvektor in körperfesten Koordinaten, n=[x_dot,y_dot,yaw_dot] den Geschwindigkeitsvektor in absoluten Koordinaten und T=[tu,tv,tr] einen Kraftvektor, welcher äußere Einflüsse widerspiegelt.
+Die Rotationsmatrix R ist bereits aus [VERLINKUNG ALLGEMEINES] bekannt. Die Matrix M bezeichnet die Massenmatrix, die Matrix C realisiert die entsprechenden Coriolis- und Zentrifugalkräfte, während die Matrix D als Dämpfungsmatrix definiert wird. 
+Demnach beinhaltet die Formel [Formel 1] die bereits bekannte Rotation, die Formel [Formel 2] hingegen stellt ein Kräftegleichgewicht her, mit dessen Hilfe die Ausgleichskräfte Fu,Fv und das Ausgleichsmoment Mr berechnet werden können. 
+Per Definition gilt für die Matrizen C & D:
+
+[Matrix aus Fossen bzw aus Masterthesis einfügen]
+
+Die darin enthaltenen Elemente sind durch verschiedene Test- und Messverfahren ermittelbar. Es handelt sich dabei um Abmessungen, Massenverteilung, Trägheitsmoment und andere spezifische Parameter. Sie werden in dieser Arbeit als bekannt vorausgesetzt und lauten:
+
+[hier Parameterdaten einfügen]
+
+Der Vektor T wird in diesem Modell ebenfalls nur bedingt genutzt und entfällt zumindest für diesen Abschnitt, da äußere Kräfte/Momente nur durch den in Abschnitt [Verlinkung zu ANTRIEB] hinzugefügten Antrieb auf unseren Schwimmkörper wirken sollen. 
+
+Da die Simulationssoftware die absolute Position und Geschwindigkeit ausgeben kann, wird [Formel 1] umgestellt zu:
+
+R^-1 *n = R^-1 *R *v = v
+
+Mit Hilfe der errechneten körperfesten Geschwindigkeiten können in unserem Modell dann gemäß der Gleichungen [Formel 1] & [Formel 2] die Kräfte Fu, Fv sowie das Moment Mr errechnet werden. 
+Da die Kräfte nur in absoluten Koordinaten auf den Körper gegeben werden können, muss mit Hilfe der Rotationsmatrix R eine Rückführung geschehen, wodurch sich dann die Kräfte [FX] und [FY] errechnen lassen. Die Rotation des Momentes [YAW] erübrigt sich, da der Winkel ohnehin der selbe ist. 
+Es folgt also aus dem beschriebenen Vorgehen für dieses Modell:
+
+u=...
+v=...
+r=yaw
+
+Fu=...
+Fv=...
+Mr=...
+
+Fx=...
+Fy=...
+Myaw=Mr
+
+Addiert man diese Größen nun negativ auf den Schwimmkörper, simuliert man logischerweise damit die Kräfte, die der Körper in der X-Y-Ebene durch seine Bewegung als Driftkräfte bzw als Dämpfung erfährt. 
+
+%
+\subsection{Ausgleichsmomente in Roll & Pitch}
+%
+Nachdem nun alle 3 translatorischen Ausgleichskräfte und ein rotatorisches Ausgleichsmoment berücksichtigt wurden, werden nun noch die Rotationsmomente hinzugefügt, die ein Kippen des Schiffes über die X-Achse (Pitch) und die Y-Achse (Roll) berücksichtigen. 
+Dazu wird nach [Fossen 4.2.2] folgendes gezeigt:
+
+[Metazentrische Höhe etc. klären ]
+
+
+Damit sind alle 6 DOFs abgedeckt. 
+%
+\section{Strömungswiderstand}
+%
+Es sollen in diesem Modell ebenfalls solche Kräfte und Momente berücksichtigt werden, die die Strömungswiderstände eines Körpers in Wasser oder Luft simulieren. Dadurch wird einerseits eine bedeutend realistischere Umgebung geschaffen, andererseits fungieren diese auch als Dämpfung.
+In dem zweidimensionalen Modell nach Fossen waren diese bereits integriert durch die Dämpfungsmatrix. In dem Konzept für die Kraft [Fheave] und die Momente [M_pitch] [M_roll] fehlen diese jedoch noch.
+Für die Kraft, die ein dynamischer Körper in einer Umgebung mit konstanter Dichte [RO] durch seine Beschaffenheit bremst, gilt im Allgemeinen die Formel:
+%
+%Wikipedia Formel
+%
+%Dabei ist A die Fläche.....
+%
+Diese Kräfte werden nun in allen Freiheitsgraden entweder in Abhängigkeit der körperfesten Geschwindigkeiten [x_dot,y_dot,z_dot] oder der Winkelgeschwindigkeiten [pitch_dot,roll_dot,yaw_dot] den in den vorigen Kapiteln beschriebenen Kräften und Momenten entgegengesetzt aufaddiert. 
+Es folgt allein für die Strömungswiderstandskräfte also der Vektor:
+
+[Vektor mit den Strömungswiderständen]
+
+Da die Kräfte [FX], [FY] und das Moment [Mr] diesen Strömungswiderstand bereits inbegriffen haben, folgt also für das Modell dieser Arbeit eine Addition des Vektors:
+
+[0,0,-FZ,-M_surge,-M_sway,0]
+
+
+
+In diesem Teil des Modells spiegelt sich auch die logische Überlegung wider, dass ein Körper eine größere Kraft erfährt, je schneller er bewegt wird. Durch das Zusammenfügen der in [DYNAMISCHE KRÄFTE],[STATISCHER AUFTRIEB] & [STRÖMUNGSWIDERSTAND] aufgestellten Kräfte ist das Modell vollständig beschrieben.
+%
+\section{Antrieb}
+%
+Der Antrieb des in dieser Arbeit modellierten Schiffes besteht in der Realität aus zwei Turbinen, die am hinteren Ende der beiden Schwimmkörper befestigt sind. Diese haben einzig und allein die Möglichkeit, an dieser Stelle des Schiffes eine Kraft auszuüben. 
+Da dieses Modell äußere Faktoren wie Wasserverwirbelungen, Wind sowie Wellengang nicht berücksichtigt, sondern im Gegenteil von einer gänzlich ruhigen Wasseroberfläche ausgeht, kann eine Turbine vereinfacht dargestellt werden als ein Punkt, der an der Stelle, an der die Turbine lokalisiert ist,  eine negative Kraft entlang der U-Achse des Schiffes ausübt. 
+Im Falle des Heron-Modells ist dies dann in folgender Abbildung visualisiert:
+
+[Screenshot VREP von einer Kuve mit Force-Sensor als Punkt für die Kraft der Turbine]
+
+
+%
+\section{Ausarbeitung in VREP}
+%
+Um nun nach den vorangegangenen Ausführungen ein entsprechendes Modell zu entwickeln, wird zunächst die Oberfläche des Heron-Schiffes in VREP importiert, um die genaue Form übernehmen zu können. . 
+Das finale Modell wird zwar die Gewichtskräfte entsprechend der Körperoberfläche berechnen, die Auftriebskräfte werden jedoch näherungsweise nach Quadern berechnet, die den Außenmaßen der Schwimmkörper entsprechen. Die exakte Bestimmung des eingetauchten Volumens wäre theoretisch möglich. Dazu würde man für jede der Achsen eine Funktion aufstellen, die die Unterseite des Schiffes beschreibt und mittels Integration ein Volumen berechnen, welches dem verdrängten Wasser entspricht. Da der Volumenunterschied aber schätzungsweise gering ist und der mathematische Aufwand hoch, wird zunächst die Vereinfachung angenommen, es würde sich um Quader handeln.
+Die beiden Schwimmkörper des Katamarans werden in VREP extrahiert bzw. freigelegt. Da über die originalen Gewichtsverteilungen des HERON keine Aussagen getroffen werden können, wird in diesem Modell angenommen, jeder Schwimmkörper würde sich wie ein Schiff mit den Daten aus [DYNAMISCHER AUFTRIEB 1] verhalten.
+
+Es könnte theoretisch auch ein Parametertest für den Heron durchgeführt werden, allerdings fehlt hierzu sowohl ein physisches Exemplar als auch die Mittel und die Anlagen für einen solchen Versuchsaufbau.
+
+Um nun mit den Objektumrandungen ein Wasserfahrzeug zu simulieren, werden mit Hilfe eines Scriptes in VREP selbst die in den vorigen Kapiteln besprochenen Kräfte eingefügt.
+Die beiden unabhängigen Schwimmkörper werden mit zwei gekoppelten Dummys verbunden, die dafür sorgen, dass die beiden Körper zu jeder Zeit ihren Abstand und ihre Orientierung beibehalten, egal welche Kräfte auf sie ausgeübt werden.
+Damit das Modell anschließend auch grafisch sinnvoll aussieht, werden die beiden Schwimmkörper nur zur Berechnung in einer nicht angezeigten Ebene des Programms hinterlegt. Oberflächlich wird die vollständige Schiffsoberfläche über die beiden Schwimmkörper gelegt. Dies hat keinen Einfluss auf die Bewegung des Wasserfahrzeugs oder die Berechnungen des Programmes, es dient lediglich einer optischen Aufwertung.
+Des Weiteren werden auf Höhe des zuvor definierten Wasserspiegels bei z=0 einige Texturen eingefügt, die wie eine Wasseroberfläche aussehen. 
+Somit ergibt sich ein Simulationsraum, der wie folgt aussieht:
+
+[SCREENSHOT VREP] 
+
+Mit Hilfe von zwei unterschiedlichen Stellgrößen kann nun entlang der Schub-Achse des jeweiligen Schwimmkörpers eine Kraft auf das Modell ausgeübt werden. Dies entspricht dem beabsichtigten Aufbau eines Katamarans mit 2 Antriebsturbinen.
+
