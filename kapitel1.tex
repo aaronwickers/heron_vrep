@@ -2,15 +2,13 @@
 % ****
 \chapter{Physikalisches Konzept & Modellbildung in VREP}
 % ****
-In diesem Kapitel soll näher erläutert werden, nach welchen physikalischen Überlegungen das in dieser Arbeit verwendete Modell konstruiert wurde und mit Hilfe welcher Vereinfachungen schließlich ein Modell in der Simulationssoftware VREP erzeugt wurde. 
-Dazu wird zunächst unter Zuhilfenahme von Fachliteratur ein entsprechendes Konzept vorgestellt und anschließend die Entwicklung eines funktionsfähigen Modells in ihrem Verlauf dargestellt.
+In diesem Kapitel wird näher erläutert, nach welchen physikalischen Überlegungen das in dieser Arbeit verwendete Modell konstruiert und mit Hilfe welcher Vereinfachungen schließlich ein Modell in der Simulationssoftware VREP erzeugt wurde. Dazu wird zunächst unter Zuhilfenahme von Fachliteratur ein entsprechendes Konzept vorgestellt und anschließend die Entwicklung eines funktionsfähigen Modells in ihrem Verlauf dargestellt.
 %
 \section{Allgemeines}
 %
-Allgemein kann das in dieser Arbeit vorgestellte Modell eines Wasserfahrzeuges mit 6 Freiheitsgraden modelliert werden. Es werden im Folgenden jeweils die englischen Begriffe der Fachliteratur verwendet. Es handelt sich dabei um 3 translatorische Freiheitsgrade (\textit{surge}, \textit{sway}, \textit{heave}). Dabei bezeichnet \textit{heave} die Hebung in Richtung der Z-Achse, \textit{sway} die Driftbewegung entlang der Y-Achse und \textit{surge} den Schub in Richtung der X-Achse - jeweils in körperfesten Koordinaten. 
-Hinzu kommen 3 rotatorische Freiheitsgrade (\textit{roll}, \textit{pitch}, \textit{yaw}). Dabei bezeichnet \textit{roll} die Rotation um die X-Achse, \textit{pitch} die Rotation um die Y-Achse und \textit{yaw} die Rotation um die Z-Achse, also gleichzeitig auch die Richtung, in die das Vehikel ausgerichtet ist. 
+Allgemein kann das in dieser Arbeit vorgestellte Modell eines Wasserfahrzeuges mit sechs Freiheitsgraden modelliert werden. Es werden im Folgenden jeweils die englischen Begriffe der Fachliteratur verwendet. Es handelt sich dabei um drei translatorische Freiheitsgrade (\textit{surge}, \textit{sway}, \textit{heave}). Dabei bezeichnet \textit{heave} die Hebung in Richtung der Z-Achse, \textit{sway} die Driftbewegung entlang der Y-Achse und \textit{surge} den Schub in Richtung der X-Achse - jeweils in körperfesten Koordinaten. Hinzu kommen drei rotatorische Freiheitsgrade (\textit{roll}, \textit{pitch}, \textit{yaw}). Dabei bezeichnet \textit{roll} die Rotation um die X-Achse, \textit{pitch} die Rotation um die Y-Achse und \textit{yaw} die Rotation um die Z-Achse, also gleichzeitig auch die Richtung, in die das Vehikel ausgerichtet ist. 
 
-Eine Übersicht über diese 6 Freiheitsgrade (im Folgenden abgekürzt aus dem Englischen: DOF = degrees of freedom) ist in folgender Abbildung visualisiert:
+Eine Übersicht über diese sechs Freiheitsgrade (im Folgenden abgekürzt aus dem Englischen: DOF = degrees of freedom) ist in folgender Abbildung visualisiert:
 
 
 Hier kommt eine Abbildung aus dem Fossen hinein (Das Schiff mit seinen Winkeln)
@@ -18,7 +16,7 @@ Hier kommt eine Abbildung aus dem Fossen hinein (Das Schiff mit seinen Winkeln)
 
 
 Um eindeutige Richtungsvektoren aufzeigen zu können, ist es notwendig, sowohl ein starres absolutes Koordinatensystem festzusetzen, als auch ein dynamisches, im Folgenden als \textit{körperfest} bezeichnetes Koordinatensystem zu definieren. 
-Das absolute Koordinatensystem soll im Folgenden durch den Vektor \textbf{\textit{\eta}} = (x,y,z) ausgedrückt werden, das körperfeste durch den Vektor \nu =(u,v,z). Wie hier schon erkennbar, beinhalten beide Systeme die Komponente Z. Bei dem körperfesten System handelt es sich also nur um eine Rotation um die Z-Achse. Dies wird in diesem Fall durch die Rotationsmatrix 
+Das absolute Koordinatensystem soll im Folgenden durch den Vektor $\vec{\eta} = \left( x, y, z \right)$ ausgedrückt werden, das körperfeste durch den Vektor $\vec{\nu} = \left( u, v, z \right)$. Wie hier schon erkennbar, beinhalten beide Systeme die Komponente Z. Bei dem körperfesten System handelt es sich also nur um eine Rotation um die Z-Achse. Dies wird in diesem Fall durch die Rotationsmatrix 
 
 [matrix]
 
