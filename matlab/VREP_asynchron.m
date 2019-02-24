@@ -29,7 +29,7 @@ function VREPS_regler(A)
     
     disp('Programm gestartet');
     vrep=remApi('remoteApi'); % Vorgefertigtes .m file benutzen
-    vrep.simxFinish(-1); % alle offenen Verbindungen schlieï¿½en.
+    vrep.simxFinish(-1); % alle offenen Verbindungen schließen.
     clientID=vrep.simxStart('127.0.0.1',19997,true,true,5000,5); %Serverstart
 
     if (clientID>-1)
@@ -65,10 +65,10 @@ function VREPS_regler(A)
         % usw...
         %
         %A ist also eine Nx2 Matrix.
-        %Dann kann mit size() die menge an punkten in A ï¿½bernommen werden.
+        %Dann kann mit size() die menge an punkten in A übernommen werden.
         %Die punkte werden nacheinander abgefahren und mittels if-bedingung
-        %gewechselt, bis der letzte punkt erreicht ist. Die Punkte dï¿½rfen
-        %nicht ï¿½ber 90ï¿½ hinaus gehen. 
+        %gewechselt, bis der letzte punkt erreicht ist. Die Punkte dürfen
+        %nicht über 90° hinaus gehen. 
         
  
 %%
@@ -101,13 +101,13 @@ function VREPS_regler(A)
         end
   
 
-        %Auslesen der Matrix, falls i sich geï¿½ndert hat:
+        %Auslesen der Matrix, falls i sich geändert hat:
         x_k1=A(i,1);
         y_k1=A(i,2);
         x_k2=A(i+1,1);
         y_k2=A(i+1,2);
         
-        %Lï¿½sung des Gleichungssystems nach x_los,y_los:    
+        %Lösung des Gleichungssystems nach x_los,y_los:    
         delta_y=y_k2-y_k1;
         delta_x=x_k2-x_k1;
         
@@ -163,7 +163,7 @@ function VREPS_regler(A)
         else phi=ang-phi_los;
         end
         
-        phi_dot=(phi-phi_alt)/timestep;     %winkelï¿½nderung = (neuer winkel-alter winkel)/zeit
+        phi_dot=(phi-phi_alt)/timestep;     %winkeländerung = (neuer winkel-alter winkel)/zeit
         phi_alt=phi;                        %neuer winkel wird zu altem winkel. 
         
         %Regler
@@ -176,7 +176,7 @@ function VREPS_regler(A)
         %Kraft links und Kraft rechts ausrechnen: 
         Fr=(tau_const+tau_rot)*0.5;
         Fl=(tau_const-tau_rot)*0.5;
-        %Leistungsbegrenzung fï¿½r F. Zwischen 0 und 10 in diesem Fall
+        %Leistungsbegrenzung für F. Zwischen 0 und 10 in diesem Fall
         if Fr<0
             Fr=0;
         end
@@ -207,7 +207,7 @@ function VREPS_regler(A)
         end
         vrep.simxPauseSimulation(clientID,vrep.simx_opmode_blocking);
         
-        %ï¿½berflï¿½ssig allokierten Speicher entfernen
+        %Überflüssig allokierten Speicher entfernen
         position_x(t:end)=[];
         position_y(t:end)=[];
         Kraft_rechts(t:end)=[];
@@ -240,7 +240,7 @@ function VREPS_regler(A)
 
 
         
-        %Krï¿½fte
+        %Kräfte
         subplot(2,2,2);
         fr_p=plot(zeit,Kraft_rechts,'r');      
         hold on;
@@ -268,7 +268,7 @@ function VREPS_regler(A)
         %title('Winkel-Zeit-Diagramm')
 
         
-        % Simulation beenden und Verbindung zu VREP schlieï¿½en :
+        % Simulation beenden und Verbindung zu VREP schließen :
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_blocking);
         vrep.simxFinish(clientID);
     else
